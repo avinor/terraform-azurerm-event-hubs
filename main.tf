@@ -12,7 +12,7 @@ locals {
 
   keys = flatten([for h in var.hubs :
     [for k in h.keys : {
-      hub  = h.name
+      hub = h.name
       key = k
   }]])
 }
@@ -67,4 +67,43 @@ resource "azurerm_eventhub_authorization_rule" "events" {
   manage = false
 
   depends_on = ["azurerm_eventhub.events"]
+}
+
+resource "azurerm_monitor_diagnostic_setting" "namespace" {
+  count                      = var.log_analytics_workspace_id == "" ? 0 : 1
+  name                       = "${var.name}-ns-log-analytics"
+  target_resource_id         = azurerm_eventhub_namespace.events.id
+  log_analytics_workspace_id = var.log_analytics_workspace_id
+
+  log {
+    category = "ArchiveLogs"
+
+    retention_policy {
+      enabled = false
+    }
+  }
+
+  log {
+    category = "OperationalLogs"
+
+    retention_policy {
+      enabled = false
+    }
+  }
+
+  log {
+    category = "AutoScaleLogs"
+
+    retention_policy {
+      enabled = false
+    }
+  }
+
+  metric {
+    category = "AllMetrics"
+
+    retention_policy {
+      enabled = false
+    }
+  }
 }

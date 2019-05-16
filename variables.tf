@@ -26,6 +26,11 @@ variable "kafka_enabled" {
   default     = false
 }
 
+variable "log_analytics_workspace_id" {
+  description = "Specifies the ID of a Log Analytics Workspace where Diagnostics Data should be sent."
+  default     = ""
+}
+
 variable "hubs" {
   description = "A list of event hubs to add to namespace."
   type        = list(object({ name = string, partitions = number, message_retention = number, consumers = list(string), keys = list(object({ name = string, listen = bool, send = bool })) }))
