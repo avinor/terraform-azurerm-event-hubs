@@ -69,7 +69,7 @@ resource "azurerm_eventhub_authorization_rule" "events" {
 }
 
 resource "azurerm_monitor_diagnostic_setting" "namespace" {
-  count                      = var.log_analytics_workspace_id == "" ? 0 : 1
+  count                      = var.log_analytics_workspace_id != null ? 1 : 0
   name                       = "${var.name}-ns-log-analytics"
   target_resource_id         = azurerm_eventhub_namespace.events.id
   log_analytics_workspace_id = var.log_analytics_workspace_id

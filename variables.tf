@@ -28,7 +28,7 @@ variable "kafka_enabled" {
 
 variable "log_analytics_workspace_id" {
   description = "Specifies the ID of a Log Analytics Workspace where Diagnostics Data should be sent."
-  default     = ""
+  default     = null
 }
 
 variable "hubs" {

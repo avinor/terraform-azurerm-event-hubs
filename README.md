@@ -6,12 +6,14 @@ It is not possible to create any hub key that have access to manage the hub. Man
 
 ## Usage
 
-Example showing deployment of a namespace with single hub.
+Example showing deployment of a namespace with single hub using [tau](https://github.com/avinor/tau)
 
 ```terraform
-module "simple" {
-    source = "../../"
+module {
+    source = "avinor/event-hubs/azurerm"
+    version = "1.1.0"
 
+inputs {
     name = "simple"
     location = "westeurope"
     resource_group_name = "events-simple-rg"
