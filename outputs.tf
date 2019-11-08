@@ -5,7 +5,7 @@ output "namespace_id" {
 
 output "hub_ids" {
   description = "Map of hubs and their ids."
-  value       = { for h in azurerm_eventhub.events.* : h.name => h.id }
+  value       = { for k, v in azurerm_eventhub.events : k => v.id }
 }
 
 output "keys" {
@@ -20,5 +20,5 @@ output "keys" {
 
 output "authorization_keys" {
   description = "Map of authorization keys with their ids."
-  value       = { for a in azurerm_eventhub_namespace_authorization_rule.events.* : a.name => a.id }
+  value       = { for a in azurerm_eventhub_namespace_authorization_rule.events : a.name => a.id }
 }

@@ -1,22 +1,25 @@
 terraform {
-  required_version = ">= 0.12.0"
+  required_version = ">= 0.12.6"
   required_providers {
     azurerm = "~> 1.36.0"
   }
 }
 
 locals {
-  consumers = flatten([for h in var.hubs :
+  consumers = { for hc in flatten([for h in var.hubs :
     [for c in h.consumers : {
       hub  = h.name
       name = c
-  }]])
+  }]]) : format("%s.%s", hc.hub, hc.name) => hc }
 
-  keys = flatten([for h in var.hubs :
+  keys = { for hk in flatten([for h in var.hubs :
     [for k in h.keys : {
       hub = h.name
       key = k
-  }]])
+  }]]) : format("%s.%s", hk.hub, hk.key.name) => hk }
+
+  hubs                = { for h in var.hubs : h.name => h }
+  authorization_rules = { for a in var.authorization_rules : a.name => a }
 
   diag_namespace_logs = [
     "ArchiveLogs",
@@ -92,30 +95,33 @@ resource "azurerm_eventhub_namespace" "events" {
 }
 
 resource "azurerm_eventhub_namespace_authorization_rule" "events" {
-  count               = length(var.authorization_rules)
-  name                = var.authorization_rules[count.index].name
+  for_each = local.authorization_rules
+
+  name                = each.key
   namespace_name      = azurerm_eventhub_namespace.events.name
   resource_group_name = azurerm_resource_group.events.name
 
-  listen = var.authorization_rules[count.index].listen
-  send   = var.authorization_rules[count.index].send
-  manage = var.authorization_rules[count.index].manage
+  listen = each.value.listen
+  send   = each.value.send
+  manage = each.value.manage
 }
 
 resource "azurerm_eventhub" "events" {
-  count               = length(var.hubs)
-  name                = var.hubs[count.index].name
+  for_each = local.hubs
+
+  name                = each.key
   namespace_name      = azurerm_eventhub_namespace.events.name
   resource_group_name = azurerm_resource_group.events.name
-  partition_count     = var.hubs[count.index].partitions
-  message_retention   = var.hubs[count.index].message_retention
+  partition_count     = each.value.partitions
+  message_retention   = each.value.message_retention
 }
 
 resource "azurerm_eventhub_consumer_group" "events" {
-  count               = length(local.consumers)
-  name                = local.consumers[count.index].name
+  for_each = local.consumers
+
+  name                = each.value.name
   namespace_name      = azurerm_eventhub_namespace.events.name
-  eventhub_name       = local.consumers[count.index].hub
+  eventhub_name       = each.value.hub
   resource_group_name = azurerm_resource_group.events.name
   user_metadata       = "terraform"
 
@@ -123,14 +129,15 @@ resource "azurerm_eventhub_consumer_group" "events" {
 }
 
 resource "azurerm_eventhub_authorization_rule" "events" {
-  count               = length(local.keys)
-  name                = local.keys[count.index].key.name
+  for_each = local.keys
+
+  name                = each.value.key.name
   namespace_name      = azurerm_eventhub_namespace.events.name
-  eventhub_name       = local.keys[count.index].hub
+  eventhub_name       = each.value.hub
   resource_group_name = azurerm_resource_group.events.name
 
-  listen = local.keys[count.index].key.listen
-  send   = local.keys[count.index].key.send
+  listen = each.value.key.listen
+  send   = each.value.key.send
   manage = false
 
   depends_on = ["azurerm_eventhub.events"]
