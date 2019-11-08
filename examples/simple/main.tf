@@ -6,5 +6,4 @@ module "simple" {
     resource_group_name = "events-simple-rg"
     sku = "Standard"
     capacity = 1
-    kafka_enabled = false
 }
