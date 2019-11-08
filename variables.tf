@@ -12,6 +12,7 @@ variable "location" {
 
 variable "sku" {
   description = "Defines which tier to use. Valid options are Basic and Standard."
+  default     = "Standard"
 }
 
 variable "capacity" {
