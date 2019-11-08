@@ -2,7 +2,7 @@ terraform {
   required_version = ">= 0.12.0"
   required_providers {
     azurerm = "~> 1.36.0"
-}
+  }
 }
 
 locals {
@@ -17,6 +17,34 @@ locals {
       hub = h.name
       key = k
   }]])
+
+  diag_namespace_logs = [
+    "ArchiveLogs",
+    "AutoScaleLogs",
+    "CustomerManagedKeyUserLogs",
+    "EventHubVNetConnectionEvent",
+    "KafkaCoordinatorLogs",
+    "KafkaUserErrorLogs",
+    "OperationalLogs",
+  ]
+  diag_namespace_metrics = [
+    "AllMetrics",
+  ]
+
+  diag_resource_list      = var.diagnostics != null ? split("/", var.diagnostics.destination) : []
+  parsed_diag = var.diagnostics != null ? {
+    log_analytics_id   = contains(local.diag_resource_list, "microsoft.operationalinsights") ? var.diagnostics.destination : null
+    storage_account_id = contains(local.diag_resource_list, "Microsoft.Storage") ? var.diagnostics.destination : null
+    event_hub_auth_id  = contains(local.diag_resource_list, "Microsoft.EventHub") ? var.diagnostics.destination : null
+    metric = contains(var.diagnostics.metrics, "all") ? local.diag_namespace_metrics : var.diagnostics.metrics
+    log    = contains(var.diagnostics.logs, "all") ? local.diag_namespace_logs : var.diagnostics.metrics
+  } : {
+    log_analytics_id   = null
+    storage_account_id = null
+    event_hub_auth_id  = null
+    metric = []
+    log    = []
+  }
 }
 
 resource "azurerm_resource_group" "events" {
@@ -32,12 +60,13 @@ resource "azurerm_eventhub_namespace" "events" {
   resource_group_name = azurerm_resource_group.events.name
   sku                 = var.sku
   capacity            = var.capacity
+  kafka_enabled       = var.sku == "Standard" ? true : false
 
   auto_inflate_enabled     = var.auto_inflate != null ? var.auto_inflate.enabled : null
   maximum_throughput_units = var.auto_inflate != null ? var.auto_inflate.maximum_throughput_units : null
 
   dynamic "network_rulesets" {
-    for_each = var.network_rulesets != null ? ["true"] : []
+    for_each = var.network_rules != null ? ["true"] : []
     content {
       default_action = "Deny"
 
@@ -97,40 +126,33 @@ resource "azurerm_eventhub_authorization_rule" "events" {
 }
 
 resource "azurerm_monitor_diagnostic_setting" "namespace" {
-  count                      = var.log_analytics_workspace_id != null ? 1 : 0
-  name                       = "${var.name}-ns-log-analytics"
-  target_resource_id         = azurerm_eventhub_namespace.events.id
-  log_analytics_workspace_id = var.log_analytics_workspace_id
+  count                          = var.diagnostics != null ? 1 : 0
+  name                           = "${var.name}-ns-diag"
+  target_resource_id             = azurerm_eventhub_namespace.events.id
+  log_analytics_workspace_id     = local.parsed_diag.log_analytics_id
+  eventhub_authorization_rule_id = local.parsed_diag.event_hub_auth_id
+  eventhub_name                  = local.parsed_diag.event_hub_auth_id != null ? var.diagnostics.eventhub_name : null
+  storage_account_id             = local.parsed_diag.storage_account_id
 
-  log {
-    category = "ArchiveLogs"
+  dynamic "log" {
+    for_each = local.parsed_diag.log
+    content {
+      category = log.value
 
-    retention_policy {
-      enabled = false
+      retention_policy {
+        enabled = false
+      }
     }
   }
 
-  log {
-    category = "OperationalLogs"
+  dynamic "metric" {
+    for_each = local.parsed_diag.metric
+    content {
+      category = metric.value
 
-    retention_policy {
-      enabled = false
-    }
-  }
-
-  log {
-    category = "AutoScaleLogs"
-
-    retention_policy {
-      enabled = false
-    }
-  }
-
-  metric {
-    category = "AllMetrics"
-
-    retention_policy {
-      enabled = false
+      retention_policy {
+        enabled = false
+      }
     }
   }
 }

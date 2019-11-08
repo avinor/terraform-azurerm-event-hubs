@@ -67,3 +67,40 @@ keys = {
     }
 }
 ```
+
+## Diagnostics
+
+Diagnostics settings can be sent to either storage account, event hub or Log Analytics workspace. The variable `diagnostics.destination` is the id of receiver, ie. storage account id, event namespace authorization rule id or log analytics resource id. Depending on what id is it will detect where to send. Unless using event namespace the `eventhub_name` is not required, just set to `null` for storage account and log analytics workspace.
+
+Setting `all` in logs and metrics will send all possible diagnostics to destination. If not using `all` type name of categories to send.
+
+## NIST compliance
+
+High level checklist of compliance against NIST Cybersecurity Framework.
+
+**PR.AC-4**: Access permissions are managed, incorporating the principles of least privilege and separation of duties
+
+Assign least privilege possible when creating access keys. Only assign required privileges.
+
+**PR.AC-5**: Network integrity is protected, incorporating network segregation where appropriate
+
+Use `network_rules` to protect the namespace from unwanted access where possible. Bind to subnet where services consuming / producing data is located and restrict by ip if access is required outside Azure.
+
+**PR.DS-1**: Data-at-rest is protected
+
+<https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-security-controls>
+
+**PR.DS-2**: Data-in-transit is protected
+
+See above. Only encrypted channels supported.
+
+AMQPs: <https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-amqp-protocol-guide#basic-amqp-scenarios>  
+Kafka: <https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-for-kafka-ecosystem-overview#security-and-authentication>
+
+**PR.IP-4**: Backups of information are conducted, maintained, and tested periodically
+
+Not using Capture as data are considered only valuable in short periods and not performing any backup of data.
+
+**DE.CM-7**: Monitoring for unauthorized personnel, connections, devices, and software is performed
+
+Use diagnostic settings to forward all logs for analysis.
