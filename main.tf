@@ -29,7 +29,10 @@ resource "azurerm_eventhub_namespace" "events" {
   resource_group_name = azurerm_resource_group.events.name
   sku                 = var.sku
   capacity            = var.capacity
-  kafka_enabled       = var.kafka_enabled
+
+  auto_inflate_enabled     = var.auto_inflate != null ? var.auto_inflate.enabled : null
+  maximum_throughput_units = var.auto_inflate != null ? var.auto_inflate.maximum_throughput_units : null
+
 
   tags = var.tags
 }

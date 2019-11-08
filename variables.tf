@@ -20,10 +20,11 @@ variable "capacity" {
   default     = 1
 }
 
-variable "kafka_enabled" {
-  description = "Is Kafka enabled for the EventHub Namespace? Defaults to false."
-  type        = bool
-  default     = false
+variable "auto_inflate" {
+  description = "Is Auto Inflate enabled for the EventHub Namespace, and what is maximum throughput?"
+  type        = object({ enabled = bool, maximum_throughput_units = number })
+  default     = null
+}
 }
 
 variable "log_analytics_workspace_id" {
