@@ -1,5 +1,5 @@
 variable "name" {
-  description = "Name of storage account, if it contains illigal characters (,-_ etc) those will be truncated."
+  description = "Name of Event Hub Namespace."
 }
 
 variable "resource_group_name" {
