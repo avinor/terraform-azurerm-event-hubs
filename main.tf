@@ -36,6 +36,28 @@ resource "azurerm_eventhub_namespace" "events" {
   auto_inflate_enabled     = var.auto_inflate != null ? var.auto_inflate.enabled : null
   maximum_throughput_units = var.auto_inflate != null ? var.auto_inflate.maximum_throughput_units : null
 
+  dynamic "network_rulesets" {
+    for_each = var.network_rulesets != null ? ["true"] : []
+    content {
+      default_action = "Deny"
+
+      dynamic "ip_rule" {
+        for_each = var.network_rules.ip_rules
+        iterator = iprule
+        content {
+          ip_mask = iprule.value
+        }
+      }
+
+      dynamic "virtual_network_rule" {
+        for_each = var.network_rules.subnet_ids
+        iterator = subnet
+        content {
+          subnet_id = subnet.value
+        }
+      }
+    }
+  }
 
   tags = var.tags
 }

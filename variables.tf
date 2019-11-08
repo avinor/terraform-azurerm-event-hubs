@@ -28,8 +28,9 @@ variable "auto_inflate" {
 }
 }
 
-variable "log_analytics_workspace_id" {
-  description = "Specifies the ID of a Log Analytics Workspace where Diagnostics Data should be sent."
+variable "network_rules" {
+  description = "Network rules restricing access to the event hub."
+  type        = object({ ip_rules = list(string), subnet_ids = list(string) })
   default     = null
 }
 
