@@ -39,6 +39,12 @@ variable "network_rules" {
   default     = null
 }
 
+variable "authorization_rules" {
+  description = "Authorization rules to add to the namespace. For hub use `hubs` variable to add authorization keys."
+  type        = list(object({ name = string, listen = bool, send = bool, manage = bool }))
+  default     = []
+}
+
 variable "hubs" {
   description = "A list of event hubs to add to namespace."
   type        = list(object({ name = string, partitions = number, message_retention = number, consumers = list(string), keys = list(object({ name = string, listen = bool, send = bool })) }))

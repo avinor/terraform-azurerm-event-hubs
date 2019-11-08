@@ -17,3 +17,8 @@ output "keys" {
     }
   }
 }
+
+output "authorization_keys" {
+  description = "Map of authorization keys with their ids."
+  value       = { for a in azurerm_eventhub_namespace_authorization_rule.events.* : a.name => a.id }
+}

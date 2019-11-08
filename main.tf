@@ -31,19 +31,19 @@ locals {
     "AllMetrics",
   ]
 
-  diag_resource_list      = var.diagnostics != null ? split("/", var.diagnostics.destination) : []
+  diag_resource_list = var.diagnostics != null ? split("/", var.diagnostics.destination) : []
   parsed_diag = var.diagnostics != null ? {
     log_analytics_id   = contains(local.diag_resource_list, "microsoft.operationalinsights") ? var.diagnostics.destination : null
     storage_account_id = contains(local.diag_resource_list, "Microsoft.Storage") ? var.diagnostics.destination : null
     event_hub_auth_id  = contains(local.diag_resource_list, "Microsoft.EventHub") ? var.diagnostics.destination : null
-    metric = contains(var.diagnostics.metrics, "all") ? local.diag_namespace_metrics : var.diagnostics.metrics
-    log    = contains(var.diagnostics.logs, "all") ? local.diag_namespace_logs : var.diagnostics.metrics
-  } : {
+    metric             = contains(var.diagnostics.metrics, "all") ? local.diag_namespace_metrics : var.diagnostics.metrics
+    log                = contains(var.diagnostics.logs, "all") ? local.diag_namespace_logs : var.diagnostics.metrics
+    } : {
     log_analytics_id   = null
     storage_account_id = null
     event_hub_auth_id  = null
-    metric = []
-    log    = []
+    metric             = []
+    log                = []
   }
 }
 
@@ -89,6 +89,17 @@ resource "azurerm_eventhub_namespace" "events" {
   }
 
   tags = var.tags
+}
+
+resource "azurerm_eventhub_namespace_authorization_rule" "events" {
+  count               = length(var.authorization_rules)
+  name                = var.authorization_rules[count.index].name
+  namespace_name      = azurerm_eventhub_namespace.events.name
+  resource_group_name = azurerm_resource_group.events.name
+
+  listen = var.authorization_rules[count.index].listen
+  send   = var.authorization_rules[count.index].send
+  manage = var.authorization_rules[count.index].manage
 }
 
 resource "azurerm_eventhub" "events" {
