@@ -11,9 +11,9 @@ output "hub_ids" {
 output "keys" {
   description = "Map of hubs with keys => primary_key / secondary_key mapping."
   sensitive   = true
-  value = { for k, h in local.keys : h.key.name => {
-    primary_key   = azurerm_eventhub_authorization_rule.events[k].primary_key
-    secondary_key = azurerm_eventhub_authorization_rule.events[k].secondary_key
+  value = { for k, h in azurerm_eventhub_authorization_rule.events : h.name => {
+    primary_key   = h.primary_key
+    secondary_key = h.secondary_key
     }
   }
 }
