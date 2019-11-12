@@ -7,6 +7,10 @@ import (
 )
 
 func TestIT_SimpleExample(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration tests")
+	}
+
 	t.Parallel()
 
 	tfOptions := &terraform.Options{
