@@ -12,6 +12,7 @@ Example showing deployment of a namespace with single hub using [tau](https://gi
 module {
     source = "avinor/event-hubs/azurerm"
     version = "1.1.0"
+}
 
 inputs {
     name = "simple"
