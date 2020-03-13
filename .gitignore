@@ -9,3 +9,7 @@
 *.tfvars
 
 *.tfplan
+
+# Intellij Idea files
+.idea
+*.iml
