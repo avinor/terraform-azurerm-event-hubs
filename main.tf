@@ -125,7 +125,7 @@ resource "azurerm_eventhub_consumer_group" "events" {
   resource_group_name = azurerm_resource_group.events.name
   user_metadata       = "terraform"
 
-  depends_on = ["azurerm_eventhub.events"]
+  depends_on = [azurerm_eventhub.events]
 }
 
 resource "azurerm_eventhub_authorization_rule" "events" {
@@ -140,7 +140,7 @@ resource "azurerm_eventhub_authorization_rule" "events" {
   send   = each.value.key.send
   manage = false
 
-  depends_on = ["azurerm_eventhub.events"]
+  depends_on = [azurerm_eventhub.events]
 }
 
 resource "azurerm_monitor_diagnostic_setting" "namespace" {
