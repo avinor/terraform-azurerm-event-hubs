@@ -1,7 +1,7 @@
 terraform {
   required_version = ">= 0.12.6"
   required_providers {
-    azurerm = "~> 1.36.0"
+    azurerm = "~> 1.44.0"
   }
 }
 
@@ -63,7 +63,6 @@ resource "azurerm_eventhub_namespace" "events" {
   resource_group_name = azurerm_resource_group.events.name
   sku                 = var.sku
   capacity            = var.capacity
-  kafka_enabled       = var.sku == "Standard" ? true : false
 
   auto_inflate_enabled     = var.auto_inflate != null ? var.auto_inflate.enabled : null
   maximum_throughput_units = var.auto_inflate != null ? var.auto_inflate.maximum_throughput_units : null
