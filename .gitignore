@@ -10,6 +10,8 @@
 
 *.tfplan
 
+*.terraform.lock.hcl
+
 # Intellij Idea files
 .idea
 *.iml
